@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SCAU 作业管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+</head>
+<body class="layui-bg-gray">
+<!--------------------------------------导航栏开始------------------------------------------->
+<div style="position: fixed; left: 0; top: 0; z-index: 10000; width: 100%; height: 60px; border-bottom: 1px solid #404553; border-right: 1px solid #404553; border-radius: 0;"
+     class="layui-bg-black">
+    <!--<div style="position: fixed;left: 0px;right: 0px;z-index: 9999">-->
+    <!--<div class="layui-container">-->
+    <div style="min-height: 60px;padding-left: 90px">
+        <div style="width: 200px;height: 100%;line-height: 60px;text-align: center;color: #009688;font-size: 20px;font-family: Cambria">
+            <strong>SCAU</strong> 作业提交系统
+        </div>
+    </div>
+
+    <ul class="layui-nav layui-layout-left" lay-filter="layui-header-left" style="left: 305px;right: 0px">
+        <li class="layui-nav-item layui-this">
+            <a href="/front/index">主页</a>
+        </li>
+        <li class="layui-nav-item">
+            <a href="/front/homework/list?userId=${session.currentUser.id}">课程作业</a>
+        </li>
+        <li class="layui-nav-item">
+            <a href="/front/course/resourse?userId=${session.currentUser.id}">课程资源</a>
+        </li>
+        <li class="layui-nav-item">
+            <a href="/front/system/about">关于</a>
+        </li>
+    </ul>
+    <ul class="layui-nav layui-layout-right" layui-filter="layui-header-right" style="padding-right: 50px;">
+        <li class="layui-nav-item">
+            <a href="/front/person_info?userId=${session.currentUser.id}">
+                <img src="/image/touxiang.png" class="layui-nav-img">
+                ${session.currentUser.userName}
+            </a>
+            <dl class="layui-nav-child" style="text-align: center">
+                <dd><a href="/front/person_info?userId=${session.currentUser.id}" id="nav_child_center">个人中心</a></dd>
+                <dd><a href="/front/update_password" id="nav_child_pass">修改密码</a></dd>
+                <dd><a href="/front/history_record" id="nav_child_history">历史记录</a></dd>
+                <hr>
+                <dd><a href="/logout.html">退出</a></dd>
+            </dl>
+        </li>
+    </ul>
+    <!--</div>-->
+</div>
+<!--------------------------------------导航栏结束------------------------------------------->
+<div style="position: relative;top:80px;margin-left: 100px;margin-right: 100px">
+    <div style="margin:0 50px 0 50px;padding:10px 20px 10px 20px;background-color: white;">
+        <fieldset class="layui-elem-field">
+            <legend>系统公告</legend>
+            <div class="layui-field-box">
+               ${sysNotice!}
+            </div>
+            <!--<div style="text-align: right">-->
+            <!--<a href="" style="color: #0000FF">更多>></a>-->
+            <!--</div>-->
+        </fieldset>
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>课程通知</legend>
+            <div class="layui-field-box">
+                <table class="layui-table" id="notice" lay-filter="notice">
+                </table>
+            </div>
+        </fieldset>
+    </div>
+</div>
+<!----------------------------------页脚开始----------------------------------------->
+<div style="position:relative;top:80px;margin: 50px 0 0; padding: 20px 0 30px; line-height: 30px; text-align: center; color: #737573; border-top: 1px solid #e2e2e2;">
+</div>
+<!----------------------------------页脚结束----------------------------------------->
+<script type="text/html" id="detailBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>
+</script>
+<script src="/js/jquery/jquery-3.3.1.min.js"></script>
+<script src="/layui/layui.js"></script>
+<script src="/js/common.js"></script>
+<script>
+
+    //JavaScript代码区域
+    layui.use(["table", "layer", "jquery", "element","laytpl"], function () {
+        var table = layui.table,
+            layer = layui.layer,
+            laytpl=layui.laytpl,
+            $ = layui.jquery;
+        //监听工具条
+
+        table.render({
+            elem:"#notice",
+            data:[{},{},{},{},{},{},{}],
+            url:"/notice/student/list?stuId=${session.currentUser.id}",
+            cols:[[
+               // {title:"id",field:"id",style:"display:none;"},
+                {title:"课程名",field:"courseName",align:"center"},
+                {title:"通知标题",field:"title",align:"center"},
+                {title:"更新时间",field:"publishTime",align:"center",templet:function(data){
+                     return timestampToTime(data.publishTime);
+                }},
+                {title:"查看详情",align:"center",toolbar: "#detailBar"}
+            ]],
+            page:true
+
+        });
+
+        table.on("tool(notice)", function (obj) {
+            var data = obj.data;
+            console.log(data)
+            if (obj.event === "detail") {
+                layer.open({
+                    type: 1,
+                    title: data.title,
+                    shade: 0.3,
+                    area: ["600px", "400px"],
+                    maxmin: false,
+                    resize: false,
+                    content: data.content,
+                    zIndex: layer.zIndex,
+                    success: function (layero) {
+                        layer.setTop(layero); //重点2
+                    }
+                });
+            }
+        });
+
+    });
+</script>
+</body>
+</html>

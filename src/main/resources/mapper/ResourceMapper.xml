@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="scau.huangyk.homeworkmanagementsystem.mapper.ResourceMapper">
+
+    <!-- 开启二级缓存 -->
+    <!--<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="scau.huangyk.homeworkmanagementsystem.entity.Resource">
+    <result column="id" property="id" />
+    <result column="createTime" property="createTime" />
+    <result column="updateTime" property="updateTime" />
+        <result column="courseId" property="courseId" />
+        <result column="name" property="name" />
+        <result column="typeId" property="typeId" />
+        <result column="srcPath" property="srcPath" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+    id,
+    createTime,
+    updateTime,
+        courseId, name, typeId, srcPath, remark
+    </sql>
+
+    <select id="selectListByStuId" resultType="scau.huangyk.homeworkmanagementsystem.vo.ResourceVo">
+        select a.id,a.name resourceName,b.name courseName,d.name typeName,a.createTime uploadTime,a.srcPath
+        from resource a inner join  course b on a.courseId=b.id inner join stu_course c on a.courseId=c.courseId
+        and stuId=#{stuId} inner join type d on a.typeId=d.id where 1=1
+        <if test="courseId!=null">
+          and a.courseId=#{courseId}
+        </if>
+        <if test="typeId!=null">
+          and a.typeId=#{typeId}
+        </if>
+        order by a.createTime desc
+    </select>
+
+    <select id="selectListByTeacherId" resultType="scau.huangyk.homeworkmanagementsystem.vo.ResourceVo">
+        select a.id,a.name resourceName,b.name courseName,c.name typeName,a.createTime uploadTime,a.srcPath
+        from resource a inner join  course b on a.courseId=b.id inner join type c on a.typeId=c.id
+        where b.teacherId=#{teacherId}
+        <if test="courseId!=null">
+            and a.courseId=#{courseId}
+        </if>
+        <if test="typeId!=null">
+            and a.typeId=#{typeId}
+        </if>
+        <if test="resourceName!=null">
+            and a.name like concat("%",#{resourceName},"%")
+        </if>
+        order by a.createTime desc
+    </select>
+
+    <!--<delete id="deleteByResourceId">-->
+        <!--delete from resource where id=#{resourceId};-->
+    <!--</delete>-->
+
+    <!--<update id="updateByResourceId">-->
+        <!--update resource set courseId=#{courseId},name=#{name},typeId=#{typeId},srcPath=#{srcPath}-->
+        <!--where id=#{id};-->
+    <!--</update>-->
+</mapper>

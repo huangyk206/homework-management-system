@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="scau.huangyk.homeworkmanagementsystem.mapper.SysPermissionMapper">
+
+    <!-- 开启二级缓存 -->
+    <!--<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="scau.huangyk.homeworkmanagementsystem.entity.SysPermission">
+    <result column="id" property="id" />
+    <result column="createTime" property="createTime" />
+    <result column="updateTime" property="updateTime" />
+        <result column="name" property="name" />
+        <result column="keyCode" property="keyCode" />
+        <result column="resourceId" property="resourceId" />
+        <result column="status" property="status" />
+        <result column="valid" property="valid" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+    id,
+    createTime,
+    updateTime,
+        name, keyCode, resourceId, status,valid
+    </sql>
+    <select id="getPermissions" resultType="SysPermission">
+        select p.*
+        from sys_role_permission s, sys_permission p where s.roleId = #{roleId} and s.permissionId = p.id
+    </select>
+
+    <select id="selectListByPage" resultType="scau.huangyk.homeworkmanagementsystem.vo.PermissionVo">
+        select a.id,a.name permissionName,a.keyCode,b.name resourceName,a.createTime,a.status from sys_permission a inner join sys_resource b on a.resourceId=b.id where a.valid=1
+        <if test="keyword!=null">
+            and a.name like concat("%",#{keyword},"%")
+        </if>
+        <if test="status!=null">
+            and a.status=#{status}
+        </if>
+    </select>
+</mapper>

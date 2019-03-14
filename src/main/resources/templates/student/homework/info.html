@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SCAU 作业管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../../layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/css/alibaba-icon/iconfont.css" media="all">
+</head>
+<body class="layui-bg-gray">
+<!--------------------------------------导航栏开始------------------------------------------->
+<div style="position: fixed; left: 0; top: 0; z-index: 10000; width: 100%; height: 60px; border-bottom: 1px solid #404553; border-right: 1px solid #404553; border-radius: 0;" class="layui-bg-black">
+    <!--<div style="position: fixed;left: 0px;right: 0px;z-index: 9999">-->
+    <!--<div class="layui-container">-->
+    <div  style="min-height: 60px;padding-left: 90px">
+        <div style="width: 200px;height: 100%;line-height: 60px;text-align: center;color: #009688;font-size: 20px;font-family: Cambria">
+            <strong>SCAU</strong> 作业提交系统
+        </div>
+    </div>
+
+    <ul class="layui-nav layui-layout-left" lay-filter="layui-header-left" style="left: 305px;right: 0px">
+        <li class="layui-nav-item ">
+            <a href="/front/index">主页</a>
+        </li>
+        <li class="layui-nav-item layui-this">
+            <a href="/front/homework/list?userId=${session.currentUser.id}">课程作业</a>
+        </li>
+        <li class="layui-nav-item ">
+            <a href="/front/course/resourse?userId=${session.currentUser.id}" >课程资源</a>
+        </li>
+        <li class="layui-nav-item ">
+            <a href="/front/system/about" >关于</a>
+        </li>
+    </ul>
+    <ul class="layui-nav layui-layout-right" layui-filter="layui-header-right" style="padding-right: 50px;">
+        <li class="layui-nav-item">
+            <a href="/front/person_info?userId=${session.currentUser.id}" >
+                <img src="/image/touxiang.png" class="layui-nav-img">
+                ${session.currentUser.userName}
+            </a>
+            <dl class="layui-nav-child" style="text-align: center">
+                <dd><a href="/front/person_info?userId=${session.currentUser.id}" id="nav_child_center">个人中心</a></dd>
+                <dd><a href="/front/update_password" id="nav_child_pass">修改密码</a></dd>
+                <dd><a href="/front/history_record" id="nav_child_history">历史记录</a></dd>
+                <hr>
+                <dd><a href="/logout.html">退出</a></dd>
+            </dl>
+        </li>
+    </ul>
+    <!--</div>-->
+</div>
+<!--------------------------------------导航栏结束------------------------------------------->
+
+<div style="position: relative;top:80px;margin-left: 100px;margin-right: 100px">
+<!--------------------------------------主体开始------------------------------------------->
+    <div style="margin:0 50px 0 50px;padding:10px 20px 10px 20px;background-color: white;">
+        <a href="javascript:history.back(-1)" onclick="javascript:location.replace(this.href);event.returnValue=false; " ><i
+                class="iconfont layui-extend-fanhui"></i>返回</a>
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>题目名称</strong></div>
+            <div class="layui-col-md11" id="subject">${homework.subject}</div>
+        </div>
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>题目类型</strong></div>
+            <div class="layui-col-md11" id="typeName">${homework.typeName}</div>
+        </div>
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>截止時間</strong></div>
+            <div class="layui-col-md11" id="deadline">
+                ${homework.deadline}
+            </div>
+        </div>
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>作业要求</strong></div>
+            <div class="layui-col-md11" id="require">${homework.require}</div>
+        </div>
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>作业备注</strong></div>
+            <div class="layui-col-md11" id="remark">${homework.remark}</div>
+        </div>
+        @if(isNotEmpty(homework.srcPath)){
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>作业附件</strong></div>
+            <div class="layui-col-md11">
+                <a class="layui-btn layui-btn-xs" href="${homework.srcPath}" download ><i class="layui-icon">&#xe601;</i> 下载附件</a>
+            </div>
+            <!--<input class="layui-hide" value="${homework.srcPath}" id="homeworkFile">-->
+        </div>
+        @}
+        @if(isNotEmpty(homework.submitRemark)){
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>提交备注</strong></div>
+            <div class="layui-col-md11" id="submitRemark">${homework.submitRemark}</div>
+        </div>
+        @}
+        @if(isNotEmpty(homework.submitFile)){
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>提交附件</strong></div>
+            <div class="layui-col-md11">
+                <a class="layui-btn layui-btn-xs" href="${homework.submitFile}"><i class="layui-icon">&#xe601;</i> 点击下载</a>
+            </div>
+            <!--<input class="layui-hide" value="${homework.submitFile}" id="submitFile">-->
+        </div>
+        @}
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div style="text-align: center">
+                <a class="layui-btn" href="javascript:history.back(-1)">返回</a>
+                <a class="layui-btn" href="/front/homework/submit?homeworkId=${homework.id}" id="submit">提交</a>
+            </div>
+        </div>
+    </div>
+<!--------------------------------------主体结束------------------------------------------->
+</div>
+<!----------------------------------页脚开始----------------------------------------->
+
+<!----------------------------------页脚结束----------------------------------------->
+<script src="../../../layui/layui.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/jquery/jquery-3.3.1.js"></script>
+<script>
+    //JavaScript代码区域
+    var deadline=$("#deadline").html();
+    if(timestampToTime(deadline)<timestampToTime(new Date())){
+        $("#submit").addClass("layui-hide");
+    }
+    // $("#download1").click(function () {
+        // $.ajax({
+        //     url:"/file/download",
+        //     data: {
+        //         srcPath: $("#homeworkFile").val()
+        //     },
+        //     success:function (res) {
+        //         layer.msg("下载成功");
+        //     }
+        // })
+        // var srcPath=$("#homeworkFile").val();
+        // window.open("/file/download?srcPath="+srcPath,"_parent");
+    // });
+
+    // $("#download2").click(function () {
+        // $.ajax({
+        //     url:"/file/download",
+        //     data: {
+        //         srcPath: $("#submitFile").val()
+        //     },
+        //     success:function (res) {
+        //         layer.msg("下载成功");
+        //     }
+        // })
+        // var srcPath= $("#submitFile").val();
+        // window.open("/file/download?srcPath="+srcPath,"_parent");
+    // });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SCAU 作业管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../../layui/css/layui.css" media="all">
+</head>
+<body class="layui-bg-gray">
+<!--------------------------------------导航栏开始------------------------------------------->
+<div style="position: fixed; left: 0; top: 0; z-index: 10000; width: 100%; height: 60px; border-bottom: 1px solid #404553; border-right: 1px solid #404553; border-radius: 0;" class="layui-bg-black">
+    <!--<div style="position: fixed;left: 0px;right: 0px;z-index: 9999">-->
+    <!--<div class="layui-container">-->
+    <div  style="min-height: 60px;padding-left: 90px">
+        <div style="width: 200px;height: 100%;line-height: 60px;text-align: center;color: #009688;font-size: 20px;font-family: Cambria">
+            <strong>SCAU</strong> 作业提交系统
+        </div>
+    </div>
+
+    <ul class="layui-nav layui-layout-left" lay-filter="layui-header-left" style="left: 305px;right: 0px">
+        <li class="layui-nav-item ">
+            <a href="/front/index">主页</a>
+        </li>
+        <li class="layui-nav-item">
+            <a href="/front/homework/list?userId=${session.currentUser.id}">课程作业</a>
+        </li>
+        <li class="layui-nav-item">
+            <a href="/front/course/resourse?userId=${session.currentUser.id}" >课程资源</a>
+        </li>
+        <li class="layui-nav-item layui-this">
+            <a href="about.html" >关于</a>
+        </li>
+    </ul>
+    <ul class="layui-nav layui-layout-right" layui-filter="layui-header-right" style="padding-right: 50px;">
+        <li class="layui-nav-item">
+            <a href="/front/person_info?userId=${session.currentUser.id}" >
+                <img src="/image/touxiang.png" class="layui-nav-img">
+                ${session.currentUser.userName}
+            </a>
+            <dl class="layui-nav-child" style="text-align: center">
+                <dd><a href="/front/person_info?userId=${session.currentUser.id}" id="nav_child_center">个人中心</a></dd>
+                <dd><a href="/front/update_password" id="nav_child_pass">修改密码</a></dd>
+                <dd><a href="/front/history_record" id="nav_child_history">历史记录</a></dd>
+                <hr>
+                <dd><a href="/logout.html">退出</a></dd>
+            </dl>
+        </li>
+    </ul>
+    <!--</div>-->
+</div>
+<!--------------------------------------导航栏结束------------------------------------------->
+<div style="position: relative;top:80px;margin-left: 100px;margin-right: 100px">
+<!--------------------------------------主体开始--------------------------------------------->
+    <div style="margin:0 50px 0 50px;padding:10px 20px 10px 20px;background-color: white;min-height: 550px">
+        <fieldset class="layui-elem-field ">
+            <legend>版权声明</legend>
+            <div class="layui-field-box">
+               ${copyright!}
+            </div>
+        </fieldset>
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>版本列表</legend>
+            <div class="layui-field-box">
+                <ul class="layui-timeline">
+                    @for( v in versionList){
+                    <li class="layui-timeline-item">
+                        <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                        <div class="layui-timeline-content layui-text">
+                            <h3 class="layui-timeline-title">${v.date,dateFormat="yyyy-MM-dd"}</h3>
+                            <ul>
+                                <li style="font-size:15px;">${v.version}</li>
+                                <li style="font-size:15px;">${v.desc}</li>
+                            </ul>
+                        </div>
+                    </li>
+                    @}
+                    <li class="layui-timeline-item">
+                        <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                        <div class="layui-timeline-content layui-text">
+                            <div class="layui-timeline-title">过去</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </fieldset>
+    </div>
+<!--------------------------------------主体结束--------------------------------------------->
+</div>
+<!----------------------------------页脚开始----------------------------------------->
+
+<!----------------------------------页脚结束----------------------------------------->
+<script src="../../../layui/layui.js"></script>
+<script>
+    //JavaScript代码区域
+    layui.use(['jquery', 'element'], function () {
+        var $ = layui.jquery;
+
+
+        //获取版本信息
+        $.ajax({
+            url: '',
+            type: 'get',
+            success: function () {
+            }
+        });
+    });
+
+</script>
+</body>
+</html>

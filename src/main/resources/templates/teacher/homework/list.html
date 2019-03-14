@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SCAU 作业管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+</head>
+<body>
+<div style="margin: 10px;">
+    <div class="layui-form">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">课程名称</label>
+                <div class="layui-input-block" style="min-width: 240px">
+                    <select class="layui-select" name="course" id="course" lay-filter="course">
+                        <option value=""></option>
+                        @for(c in courseList){
+                        <option value="${c.id}">${c.name}</option>
+                        @}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">作业状态</label>
+                <div class="layui-input-block" style="min-width: 240px">
+                    <select class="layui-select" name="status" id="status" lay-filter="status">
+                        <option value=""></option>
+                        <option value="1">正常</option>
+                        <option value="0">过期</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">作业题目</label>
+                <div class="layui-input-block" style="min-width: 240px">
+                    <input type="text" class="layui-input" name="keyword" id="keyword">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <button class="layui-btn" lay-submit lay-filter="homework-search">
+                    <i class="layui-icon layui-icon-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <table class="layui-hide" id="homeworkList"
+           lay-filter="homework-list">
+    </table>
+</div>
+
+<script type="text/html" id="toolBar">
+    <div class="layui-btn-group">
+        <button class="layui-btn layui-btn-sm" lay-event="add"><i class="layui-icon">&#xe654;</i>新增</button>
+        <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="delete"><i
+                class="layui-icon">&#xe640;</i>删除
+        </button>
+    </div>
+</script>
+
+<script type="text/html" id="operationBar">
+    <button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">编辑</button>
+    <button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</button>
+    <button class="layui-btn layui-btn-primary layui-btn-xs" lay-event="submit">查看提交</button>
+
+</script>
+<script src="/layui/layui.js"></script>
+<script src="/js/common.js"></script>
+<script>
+    //JavaScript代码区域
+    layui.use(["jquery", "element", "form", "table"], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table;
+        table.render({
+            elem:"#homeworkList",
+            toolbar:"#toolBar",
+            height:"full-190",
+            url:"/homework/teacher/list?teacherId=${session.currentUser.id}",
+            // limits : [10,15,20,25],
+            cols:[[
+                {type:"checkbox",fixed:"left"},
+                {title:"题目",field:"subject",align:"center"},
+                {title:"所属课程",field:"courseName",align:"center"},
+                {title:"截止日期",field:"deadline",align:"center",templet:function (data) {
+                    return timestampToTime(data.deadline);
+                }},
+                {title:"状态",field:"status",align:"center",templet:function (data) {
+                    if(timestampToTime(data.deadline)<timestampToTime(new Date())){
+                        return "<span style='color:red'>已过期</span>";
+                    }else{
+                        return "<span style='color:blue'>未过期</span>";
+                    }
+                }},
+                {title:"操作",align:"center",toolbar:"#operationBar",fixed:"right"},
+            ]],
+            page:true,
+        });
+
+        form.on("select(course)", function (data) {
+            reload();
+        });
+
+        form.on("select(status)", function (data) {
+            reload();
+        });
+
+        form.on("submit(homework-search)", function (data) {
+            reload();
+        });
+
+
+        table.on("tool(homework-list)", function (obj) {
+            var data=obj.data;
+            var event=obj.event;
+            if(event=="edit"){
+                var title="编辑作业";
+                var content="/homework/edit.html?homeworkId="+data.id+"&teacherId=${session.currentUser.id}";
+                open(title,content);
+            }else if(event=="delete"){
+                deleteHomework(data.id,"是否删除该作业");
+            }else if(event="submit"){
+                var title="提交详情";
+                var content="/homework/submit/list.html?homeworkId="+data.id;
+                open(title,content);
+            }
+
+        });
+
+        function open(title,content) {
+            var index = layer.open({
+                title : title,
+                type : 2,
+                content : content,
+                success : function(layero, index){
+                    layer.getChildFrame('body', index);
+                },
+                cancel:function () {
+                   reload();
+                }
+            })
+            layer.full(index);
+            //改变窗口大小时，重置弹窗的宽高，防止超出可视区域（如F12调出debug的操作）
+            $(window).on("resize",function(){
+                layer.full(index);
+            })
+        };
+
+
+        function deleteHomework(homeworkIds,content){
+            layer.open({
+                title:"提醒",
+                content: content,
+                btn: ["确定","取消"],
+                yes: function(index, layero){
+                    $.ajax({
+                        url:"/homework/delete",
+                        data:{
+                            homeworkIds:homeworkIds
+                        },
+                        type:"post",
+                        success:function (res) {
+                            layer.msg(res.msg);
+                            reload();
+                        }
+                    })
+                }
+            });
+
+        }
+
+        table.on('toolbar(homework-list)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            var event=obj.event;
+            if(event=="add"){
+                var title="添加作业";
+                var content="/homework/add.html?teacherId=${session.currentUser.id}";
+                open(title,content);
+            }else if(event=="delete"){
+                var data = checkStatus.data;
+                if(data.length<1){
+                    layer.msg("至少选择一条数据");
+                }else{
+                    var homeworkIds="";
+                    $.each(data,function (i,n) {
+                        homeworkIds+=n.id+",";
+                    })
+                    homeworkIds=homeworkIds.substr(0,homeworkIds.length-1);
+                    deleteHomework(homeworkIds,"是否删除选中的"+data.length+"个作业");
+                }
+            }
+
+        });
+
+        function reload(){
+            table.reload("homeworkList", {
+                url: "/homework/teacher/list",
+                where: {
+                    teacherId: "${session.currentUser.id}",
+                    status:$("#status").val(),
+                    courseId: $("#course").val(),
+                    keyword: $("#keyword").val(),
+                }
+            });
+        }
+
+
+
+    });
+
+</script>
+</body>
+</html>

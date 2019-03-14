@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SCAU 作业管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../../layui/css/layui.css" media="all">
+</head>
+<body class="layui-bg-gray">
+<!--------------------------------------导航栏开始------------------------------------------->
+<div style="position: fixed; left: 0; top: 0; z-index: 10000; width: 100%; height: 60px; border-bottom: 1px solid #404553; border-right: 1px solid #404553; border-radius: 0;" class="layui-bg-black">
+    <!--<div style="position: fixed;left: 0px;right: 0px;z-index: 9999">-->
+    <!--<div class="layui-container">-->
+    <div  style="min-height: 60px;padding-left: 90px">
+        <div style="width: 200px;height: 100%;line-height: 60px;text-align: center;color: #009688;font-size: 20px;font-family: Cambria">
+            <strong>SCAU</strong> 作业提交系统
+        </div>
+    </div>
+
+    <ul class="layui-nav layui-layout-left" lay-filter="layui-header-left" style="left: 305px;right: 0px">
+        <li class="layui-nav-item ">
+            <a href="/front/index">主页</a>
+        </li>
+        <li class="layui-nav-item">
+            <a href="/front/homework/list?userId=${session.currentUser.id}">课程作业</a>
+        </li>
+        <li class="layui-nav-item">
+            <a href="/front/course/resourse?userId=${session.currentUser.id}" >课程资源</a>
+        </li>
+        <li class="layui-nav-item ">
+            <a href="/front/system/about" >关于</a>
+        </li>
+    </ul>
+    <ul class="layui-nav layui-layout-right" layui-filter="layui-header-right" style="padding-right: 50px;">
+        <li class="layui-nav-item">
+            <a href="/front/person_info?userId=${session.currentUser.id}" >
+                <img src="/image/touxiang.png" class="layui-nav-img">
+                ${session.currentUser.userName}
+            </a>
+            <dl class="layui-nav-child" style="text-align: center">
+                <dd><a href="/front/person_info?userId=${session.currentUser.id}" id="nav_child_center">个人中心</a></dd>
+                <dd><a href="/front/update_password" id="nav_child_pass">修改密码</a></dd>
+                <dd><a href="/front/history_record"  id="nav_child_history">历史记录</a></dd>
+                <hr>
+                <dd><a href="/logout.html">退出</a></dd>
+            </dl>
+        </li>
+    </ul>
+    <!--</div>-->
+</div>
+<!--------------------------------------导航栏结束------------------------------------------->
+<div style="position: relative;top:80px;margin-left: 100px;margin-right: 100px">
+    <div style="margin:0 50px 0 50px;padding:10px 20px 10px 20px;">
+        <!----------------------------------左侧菜单栏开始----------------------------------------->
+        <ul class="layui-nav layui-nav-tree layui-inline" lay-filter="user" style="position: absolute;padding-top: 20px">
+            <li class="layui-nav-item "><a href="/front/person_info?userId=${session.currentUser.id}" id="nav_item_center"> <i
+                    class="layui-icon">&#xe612;</i> 个人中心 </a></li>
+            <li class="layui-nav-item "><a href="/front/update_password" id="nav_item_pass"> <i
+                    class="layui-icon">&#xe673;</i> 修改密码 </a></li>
+            <li class="layui-nav-item layui-this"><a href="/front/history_record"  id="nav_item_history"> <i
+                    class="layui-icon">&#xe60a;</i> 历史记录 </a></li>
+            <!--<li class="layui-nav-item "><a href="/front/history_record"  id="nav_item_notice"> <i-->
+                    <!--class="layui-icon">&#xe667;</i> 消息中心 </a></li>-->
+
+        </ul>
+        <!----------------------------------左侧菜单栏结束----------------------------------------->
+
+<!----------------------------------右侧开始----------------------------------------->
+<div style="margin-left:215px;min-height: 590px;min-width: 650px;background-color: white;padding-top: 10px">
+    <div class="layui-tab layui-tab-brief" lay-filter="history-tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="submitList">已提交</li>
+            <li lay-id="overtimeList">逾期未交</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <table class="layui-hide" id="submitList" lay-filter="submit-list">
+                </table>
+            </div>
+            <div class="layui-tab-item ">
+                <table class="layui-hide" id="overtimeList" lay-filter="overtime-list">
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+<!----------------------------------右侧结束----------------------------------------->
+<!----------------------------------页脚开始----------------------------------------->
+
+<!----------------------------------页脚结束----------------------------------------->
+
+<script type="text/html" id="submitBar">
+    <a class="layui-btn  layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="download">下载</a>
+</script>
+
+<script type="text/html" id="overtimeBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>
+</script>
+
+<script src="/layui/layui.js"></script>
+<script src="/js/common.js"></script>
+<script>
+    layui.use(["element", "form", "jquery", "upload", "table","laytpl"], function () {
+        var form = layui.form,
+            $ = layui.jquery,
+            table = layui.table,
+            laytpl=layui.laytpl,
+            element=layui.element;
+
+        table.on("tool(submit-list)", function (obj) {
+            var data = obj.data;
+            if (obj.event === "detail") {//点击查看
+                parent.window.location.href = "/front/homework/info?homeworkId="+data.id;
+            } else if (obj.event === "download") {//点击下载
+                var srcPath=data.submitFile;
+            }
+        });
+
+        table.on("tool(overtime-list)", function (obj) {
+            var data = obj.data;
+            if (obj.event === "detail") {
+                parent.window.location.href = "/front/homework/info?homeworkId="+data.id;
+            }
+        });
+
+        table.render({
+            elem: "#submitList",
+            url:"/homework/student/list?stuId=${session.currentUser.id}&status=1",
+            cols: [[
+                {title:"课程名称",field:"courseName",align:"center"},
+                {title:"作业题目",field:"subject",align:"center"},
+                {title:"提交时间",field:"submitTime",align:"center",sort:true,templet:function (data) {
+                    if(data.submitTime==null){
+                        return "";
+                    }
+                    return  timestampToTime(data.submitTime);
+                }},
+                {title:"操作",align:"center",templet:function (data) {
+                        if(data.submitFile!=null&&data.submitFile!=""){
+                            return '<a class="layui-btn  layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>\n' +
+                                '    <a class="layui-btn layui-btn-xs" href="'+data.submitFile+'" >下载</a>';
+                        }else{
+                            return '<a class="layui-btn  layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>\n' +
+                                '    <a class="layui-btn layui-btn-xs"  disabled title="无附件下载">下载</a>';
+                        }
+                    }}
+            ]],
+            page:true,
+        } );
+
+        table.render({
+            elem: "#overtimeList",
+            url:"/homework/student/list?stuId=${session.currentUser.id}&status=2",
+            cols: [[
+                {title:"课程名称",field:"courseName",align:"center"},
+                {title:"作业题目",field:"subject",align:"center"},
+                {title:"截止时间",field:"deadline",align:"center",sort:true,templet:function (data) {
+                    if(data.deadline==null){
+                        return "";
+                    }
+                    return  timestampToTime(data.deadline);
+                }},
+                {title:"操作",align:"center",toolbar: "#overtimeBar"}
+            ]],
+            page:true,
+        } );
+
+        element.on("tab(history-tab)",function () {
+            var id=this.getAttribute("lay-id");
+            if(id=="submitList"){
+                table.reload("submitList",{
+                    url:"/homework/student/list?stuId=${session.currentUser.id}&status=1"
+                });
+            }else if(id=="overtimeList"){
+                table.reload("overtimeList",{
+                    url:"/homework/student/list?stuId=${session.currentUser.id}&status=2"
+                });
+            }
+        });
+
+    });
+</script>
+</body>
+</html>

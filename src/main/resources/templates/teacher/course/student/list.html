@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SCAU 作业管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+</head>
+<body>
+<div style="margin: 10px;">
+    <div class="layui-form">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <div class="layui-input-inline" style="min-width: 240px">
+                    <input type="text" class="layui-input" name="keyword" id="keyword" placeholder="输入学号/姓名">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <button class="layui-btn" lay-submit lay-filter="student-search">
+                    <i class="layui-icon layui-icon-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <table class="layui-hide" id="studentList"
+           lay-filter="student-list">
+    </table>
+</div>
+
+<script type="text/html" id="toolBar">
+    <div class="layui-btn-group">
+        <button class="layui-btn layui-btn-sm" lay-event="import"><i class="layui-icon">&#xe67c;</i>批量导入</button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="add"><i class="layui-icon">&#xe654;</i>新增</button>
+        <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="delete"><i class="layui-icon">&#xe640;</i>删除</button>
+    </div>
+</script>
+
+<script type="text/html" id="operationBar">
+    <!--<button class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</button>-->
+    <button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">编辑</button>
+    <button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</button>
+    <!--<button class="layui-btn  layui-btn-xs" lay-event="list">查看名单</button>-->
+</script>
+<script src="/layui/layui.js"></script>
+<script>
+    //JavaScript代码区域
+    layui.use(["jquery", "element", "form", "table","layer","upload"], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+            layer=layui.layer,
+            upload=layui.upload;
+        table.render({
+            elem:"#studentList",
+            toolbar:"#toolBar",
+            url:"/course/student/list?courseId=${courseId}",
+            cols:[[
+                {type:"checkbox",fixed:"left"},
+                {title:"学号",field:"stuNum",align:"center"},
+                {title:"姓名",field:"stuName",align:"center"},
+                {title:"班级",field:"clazz",align:"center"},
+                {title:"性别",field:"sex",align:"center"},
+                {title:"操作",align:"center",toolbar:"#operationBar",fixed:"right"},
+            ]],
+            page:true
+        });
+
+        table.on("tool(student-list)", function (obj) {
+            var data=obj.data;
+            var event=obj.event;
+            if(event=="edit"){
+                var title="编辑学生";
+                var content="/course/student/edit.html?stuId="+data.id;
+                open(title,content);
+            }else if(event=="delete"){
+                deleteStudent(data.id,"是否删除该学生");
+            }
+
+        });
+
+        function open(title,content) {
+            var index = layer.open({
+                title : title,
+                type : 2,
+                content : content,
+                success : function(layero, index){
+                    layer.getChildFrame('body', index);
+                },
+                cancel:function () {
+                   reload();
+                }
+            })
+            layer.full(index);
+            //改变窗口大小时，重置弹窗的宽高，防止超出可视区域（如F12调出debug的操作）
+            $(window).on("resize",function(){
+                layer.full(index);
+            })
+        };
+
+
+        function deleteStudent(stuIds,content){
+            layer.open({
+                title:"提醒",
+                content: content,
+                btn: ["确定","取消"],
+                yes: function(index, layero){
+                    $.ajax({
+                        url:"/course/student/delete",
+                        data:{
+                            stuIds:stuIds,
+                            courseId:"${courseId}"
+                        },
+                        type:"post",
+                        success:function (res) {
+                            layer.msg(res.msg);
+                            reload();
+                        }
+                    })
+                }
+            });
+
+        }
+
+        table.on('toolbar(student-list)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            var event=obj.event;
+            if(event=="add"){
+                var title="添加学生";
+                var content="/course/student/add.html";
+                open(title,content);
+            }else if(event=="delete"){
+                var data = checkStatus.data;
+                if(data.length<1){
+                    layer.msg("至少选择一条数据");
+                }else{
+                    var stuIds="";
+                    $.each(data,function (i,n) {
+                        stuIds+=n.id+",";
+                    })
+                    stuIds=stuIds.substr(0,stuIds.length-1);
+                    deleteStudent(stuIds,"是否删除选中的"+data.length+"个学生");
+                }
+            }else if(event=="import"){
+                importUser();
+            }
+
+        });
+
+        form.on("submit(student-search)",function (data) {
+            reload();
+        });
+
+        function reload() {
+            table.reload("studentList",{
+                url:"/course/student/list",
+                where:{
+                    courseId:"${courseId}",
+                    keyword:$("#keyword").val()
+                }
+            })
+        };
+
+        function importUser() {
+            layer.open({
+                type:1,
+                title:"导入",
+                content: '<div style="text-align: center;margin-top: 30px">' +
+                    '    <button class="layui-btn" id="upload"><i class="layui-icon">&#xe67c;</i>点击上传文件</button>' +
+                    '    <div style="margin-top: 10px" id="srcPath"></div>' +
+                    '</div>',
+                area: ['500px', '220px'],
+                resize:false,
+                btn: ['下载模版', '确定导入', '取消'],
+                btnAlign: 'c',
+                btn1: function(index, layero){
+                    window.location.href="/templet/名单模板.xlsx"
+                    return false;
+                },
+                btn2: function(index, layero){
+                    return false;
+                }
+            });
+
+            upload.render({
+                elem: "#upload",
+                url: "/upload/",
+                exts:"xsl|xlsx",
+                done: function(res){
+
+                },
+                error:function () {
+                    $("#srcPath").html("3243243243");
+                }
+            });
+        };
+
+    });
+
+</script>
+</body>
+</html>

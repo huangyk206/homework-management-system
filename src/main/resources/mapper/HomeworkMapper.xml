@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="scau.huangyk.homeworkmanagementsystem.mapper.HomeworkMapper">
+
+    <!-- 开启二级缓存 -->
+    <!--<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="scau.huangyk.homeworkmanagementsystem.entity.Homework">
+    <result column="id" property="id" />
+    <result column="createTime" property="createTime" />
+    <result column="updateTime" property="updateTime" />
+        <result column="courseId" property="courseId" />
+        <result column="typeId" property="typeId" />
+        <result column="subject" property="subject" />
+        <result column="keyword" property="keyword" />
+        <result column="require" property="require" />
+        <result column="remark" property="remark" />
+        <result column="srcPath" property="srcPath" />
+        <result column="fileType" property="fileType" />
+        <result column="fileSize" property="fileSize" />
+        <result column="deadline" property="deadline" />
+        <result column="valid" property="valid" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+    id,
+    createTime,
+    updateTime,
+        courseId, typeId, subject, keyword, require, remark, srcPath, fileType,fileSize, deadline, valid
+    </sql>
+
+    <select id="selectListByStuId" resultType="scau.huangyk.homeworkmanagementsystem.vo.HomeworkVo">
+        select c.id,b.name courseName,c.subject,c.deadline,d.submitTime,d.srcPath submitFile from stu_course a inner join
+        course b on a.courseId=b.id and a.stuId=#{stuId}
+        <if test="courseId != null">
+            and a.courseId=#{courseId}
+        </if>
+        inner join homework c on b.id=c.courseId left join
+        stu_homework d on d.homeworkId=c.id
+        <if test="status!=null and status==0">
+            where d.submitTime is null
+        </if>
+        <if test="status!=null and status==1">
+            where d.submitTime is not null
+        </if>
+        <if test="status!=null and status==2">
+            where d.submitTime is null and c.deadline &lt; now()
+        </if>
+        order by c.createTime desc
+    </select>
+
+    <select id="selectByHomeworkId" resultType="scau.huangyk.homeworkmanagementsystem.vo.HomeworkVo">
+        select a.id,a.subject,a.deadline,a.srcPath,b.submitTime,a.remark,c.name typeName,a.require,a.fileType,a.fileSize,b.remark submitRemark,b.srcPath as submitFile from  homework a
+        left join stu_homework b on b.homeworkId=a.id inner join type c on c.id=a.typeId where a.id=#{homeworkId};
+    </select>
+
+    <insert id="insertStudentHomework">
+        insert into stu_homework (stuId,homeworkId,remark,srcPath,submitTime) values(#{stuId},#{homeworkId},#{remark},#{srcPath},now());
+    </insert>
+
+    <update id="updateByStuIdAndHomeworkId">
+        update stu_homework set remark=#{remark},srcPath=#{srcPath},submitTime=now(),updateTime=now() where stuId=#{stuId} and homeworkId=#{homeworkId};
+    </update>
+
+    <select id="selectListByTeacherId" resultType="scau.huangyk.homeworkmanagementsystem.vo.HomeworkVo">
+        select a.id,a.subject,b.name courseName,a.deadline
+        from homework a inner join course b on a.courseId=b.id
+        where b.teacherId=#{teacherId} and a.valid=1
+        <if test="courseId!=null">
+            and a.courseId=#{courseId}
+        </if>
+        <if test="status!=null and status==1">
+            and a.deadline &gt; now()
+        </if>
+        <if test="status!=null and status==0">
+            and a.deadline &lt; now()
+        </if>
+        <if test="subject!=null">
+            and a.subject like concat("%",#{subject},"%")
+        </if>
+        order by a.deadline asc
+
+    </select>
+
+    <select id="selectSubmitList" resultType="scau.huangyk.homeworkmanagementsystem.vo.SubmitHomeworkVo">
+        select a.id stuId,d.id homeworkId,a.userName stuName,a.clazz,a.account stuNum,d.subject,
+        c.name courseName,e.submitTime,e.isRevise,e.score,e.remark submitRemark,
+        e.srcPath,e.feedback
+        from user a inner join stu_course b on a.id=b.stuId
+        inner join course c on b.courseId=c.id
+        inner join homework d on c.id=d.courseId
+        left join stu_homework e on d.id=e.homeworkId
+        where c.teacherId=#{teacherId}
+        <if test="courseId!=null">
+            and  b.courseId=#{courseId}
+        </if>
+        <if test="homeworkId!=null">
+            and d.id=#{homeworkId}
+        </if>
+        <if test="isSubmit!=null and isSubmit==1">
+            and e.submitTime is not null
+        </if>
+        <if test="isSubmit!=null and isSubmit==0">
+            and e.submitTime is null
+        </if>
+        <if test="isRevise!=null">
+            and e.isRevise=#{isRevise}
+        </if>
+        <if test="keyword!=null">
+            and a.account like concat("%",#{keyword},"%")
+        </if>
+        order by e.submitTime desc
+
+    </select>
+
+    <select id="selectSubmitHomework" resultType="scau.huangyk.homeworkmanagementsystem.vo.SubmitHomeworkVo">
+        select a.id stuId,d.id homeworkId,a.userName stuName,a.clazz,a.account stuNum,d.subject,
+        c.name courseName,e.submitTime,e.isRevise,e.score,e.remark submitRemark,
+        e.srcPath,e.feedback
+        from user a inner join stu_course b on a.id=b.stuId
+        inner join course c on b.courseId=c.id
+        inner join homework d on c.id=d.courseId
+        left join stu_homework e on d.id=e.homeworkId
+        where a.id=#{stuId} and d.id=#{homeworkId};
+    </select>
+
+    <update id="updateStudentHomework">
+        update stu_homework set isRevise=1 ,score=#{score},feedback=#{feedback}
+        where stuId=#{stuId} and homeworkId=#{homeworkId};
+    </update>
+
+    <select id="selectCountByStuIdAndHomeworkId" resultType="Integer">
+        select count(1) from stu_homework where stuId=#{stuId} and homeworkId=#{homeworkId};
+    </select>
+
+</mapper>

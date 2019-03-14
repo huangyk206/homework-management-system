@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SCAU 作业管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+</head>
+<body>
+<div style="margin: 10px;">
+    <form class="layui-form" action="">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">所属课程</label>
+                <div class="layui-input-block" style="min-width: 240px">
+                    <select class="layui-select" name="course" id="course">
+                        <option value=""></option>
+                        @for(c in courseList){
+                            @if(isNotEmpty(resource)&&resource.courseId==c.id){
+                                <option value="${c.id}" selected>${c.name}</option>
+                            @}else{
+                                <option value="${c.id}">${c.name}</option>
+                            @}
+                        @}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">资源类型</label>
+                <div class="layui-input-block" style="min-width: 240px">
+                    <select class="layui-select" name="type" id="type">
+                        <option value=""></option>
+                        @for(r in resourceTypeList){
+                            @if(isNotEmpty(resource)&&resource.typeId==r.id){
+                                 <option value="${r.id}" selected>${r.name}</option>
+                            @}else{
+                                <option value="${r.id}">${r.name}</option>
+                            @}
+                        @}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">资源名称</label>
+                <div class="layui-input-block" style="min-width: 240px">
+                    <input class="layui-input" name="resource_name" id="resource_name">
+
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">附件</label>
+                <div class="layui-input-inline" >
+                    <button class="layui-btn" id="upload"><i class="layui-icon">&#xe67c;</i> 上传附件</button>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide" >
+            <div class="layui-inline">
+                <label class="layui-form-label">附件</label>
+                <div class="layui-input-inline" >
+                    <button class="layui-btn" id="download"><i class="layui-icon">&#xe601;</i> 下载附件</button>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <div class="layui-inline">
+                <label class="layui-form-label">备注</label>
+                <div class="layui-input-block" style="min-width: 280px">
+                    <textarea placeholder="请输入内容" class="layui-textarea" name="remark" id="remark"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit="" lay-filter="submit">确定</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="/layui/layui.js"></script>
+<script>
+    //JavaScript代码区域
+    layui.use(["jquery", "element", "form", "table","laydate","upload"], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+            laydate=layui.laydate,
+            upload=layui.upload;
+
+        upload.render({
+           elem:"#upload",
+            // url:"",
+            // exts:""
+        });
+
+        // upload.render({
+        //     elem:"download",
+        // })
+    });
+
+</script>
+</body>
+</html>

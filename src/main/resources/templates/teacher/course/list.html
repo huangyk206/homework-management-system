@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SCAU 作业管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+</head>
+<body>
+<div style="margin: 10px;">
+    <div class="layui-form">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"> 课程名称</label>
+                <div class="layui-input-block" style="min-width: 240px">
+                    <input type="text" class="layui-input" name="keyword" id="keyword">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">课程状态</label>
+                <div class="layui-input-block" style="min-width: 240px">
+                    <select class="layui-select" name="status" id="status" lay-filter="status">
+                        <option value=""></option>
+                        <option value="1">正常</option>
+                        <option value="0">结束</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <input class="layui-hide" id="userId" name="userId" value="${session.currentUser.id}">
+                <button class="layui-btn" lay-submit lay-filter="course-search">
+                    <i class="layui-icon layui-icon-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <table class="layui-hide" id="courseList"
+           lay-filter="course-list">
+    </table>
+</div>
+
+<script type="text/html" id="toolBar">
+    <div class="layui-btn-group">
+        <button class="layui-btn layui-btn-sm" lay-event="add"><i class="layui-icon">&#xe654;</i>新增</button>
+        <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="delete"><i
+                class="layui-icon">&#xe640;</i>删除
+        </button>
+    </div>
+</script>
+
+<script type="text/html" id="operationBar">
+    <!--<button class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</button>-->
+    <button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">编辑</button>
+    <button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</button>
+    <button class="layui-btn  layui-btn-xs" lay-event="list">查看名单</button>
+</script>
+<script src="/layui/layui.js"></script>
+<script src="/js/common.js"></script>
+<script>
+    //JavaScript代码区域
+    layui.use(["jquery", "element", "form", "table", "laytpl","layer"], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+            layer=layui.layer;
+        table.render({
+            elem:"#courseList",
+            toolbar:"#toolBar",
+            url:"/course/list?teacherId=${session.currentUser.id}",
+            height:"full-90",
+            cols:[[
+                {type:"checkbox",fixed:"left"},
+                {title:"课程名",field:"name",align:"center"},
+                {title:"开始时间",field:"startTime",align:"center",templet:function (data) {
+                    return timestampToTime(data.startTime);
+                }},
+                {title:"结束时间",field:"endTime",align:"center",templet:function (data) {
+                    return timestampToTime(data.endTime);
+                }},
+                {title:"状态",field:"status",align:"center",templet:function (data) {
+                    if(timestampToTime(data.endTime)<timestampToTime(new Date())){
+                        return "<span style='color:red'>结束</span>";
+                    }else{
+                        return "<span style='color:blue'>正常</span>";
+                    }
+                }},
+                {title:"操作",align:"center",toolbar:"#operationBar",fixed:"right"},
+            ]],
+            page:true
+        });
+
+        form.on("select(status)", function(data){
+           reload();
+        });
+
+        form.on("submit(course-search)",function (data) {
+            reload();
+        });
+
+        table.on("tool(course-list)", function (obj) {
+            var data=obj.data;
+            var event=obj.event;
+            if(event=="edit"){
+                var title="编辑课程";
+                var content="/course/edit.html?courseId="+data.id;
+                open(title,content);
+            }else if(event=="list"){
+                var title="学生列表";
+                var content="/course/student/list.html?courseId="+data.id;
+                open(title,content);
+            }else if(event=="delete"){
+                deleteCourse(data.id,"是否删除该课程");
+            }
+
+        });
+
+        function open(title,content) {
+            var index = layer.open({
+                title : title,
+                type : 2,
+                content : content,
+                success : function(layero, index){
+                    layer.getChildFrame('body', index);
+                },
+                cancel:function () {
+                    reload();
+                }
+            })
+            layer.full(index);
+            //改变窗口大小时，重置弹窗的宽高，防止超出可视区域（如F12调出debug的操作）
+            $(window).on("resize",function(){
+                layer.full(index);
+            })
+        };
+
+
+        function deleteCourse(courseIds,content){
+            layer.open({
+                title:"提醒",
+                content: content,
+                btn: ["确定","取消"],
+                yes: function(index, layero){
+                    $.ajax({
+                        url:"/course/delete",
+                        data:{
+                            courseIds:courseIds
+                        },
+                        type:"post",
+                        success:function (res) {
+                            layer.msg(res.msg);
+                            reload();
+                        }
+                    })
+                }
+            });
+
+        }
+
+        table.on('toolbar(course-list)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            var event=obj.event;
+            if(event=="add"){
+                var title="添加课程";
+                var content="/course/add.html";
+                open(title,content);
+            }else if(event=="delete"){
+                var data = checkStatus.data;
+                if(data.length<1){
+                    layer.msg("至少选择一条数据");
+                }else{
+                    var courseIds="";
+                    $.each(data,function (i,n) {
+                        courseIds+=n.id+",";
+                    })
+                    courseIds=courseIds.substr(0,courseIds.length-1);
+                    deleteCourse(courseIds,"是否删除选中的"+data.length+"门课程");
+                }
+            }
+        });
+
+        function reload() {
+            table.reload("courseList",{
+                url:"/course/list",
+                where:{
+                    teacherId:"${session.currentUser.id}",
+                    status:$("#status").val(),
+                    keyword:$("#keyword").val()
+                }
+            })
+        }
+
+    });
+
+</script>
+</body>
+</html>

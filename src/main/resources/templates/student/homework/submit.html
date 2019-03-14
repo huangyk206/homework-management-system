@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SCAU 作业管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../../layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/css/alibaba-icon/iconfont.css" media="all">
+</head>
+<body class="layui-bg-gray">
+<!--------------------------------------导航栏开始------------------------------------------->
+<div style="position: fixed; left: 0; top: 0; z-index: 10000; width: 100%; height: 60px; border-bottom: 1px solid #404553; border-right: 1px solid #404553; border-radius: 0;" class="layui-bg-black">
+    <!--<div style="position: fixed;left: 0px;right: 0px;z-index: 9999">-->
+    <!--<div class="layui-container">-->
+    <div  style="min-height: 60px;padding-left: 90px">
+        <div style="width: 200px;height: 100%;line-height: 60px;text-align: center;color: #009688;font-size: 20px;font-family: Cambria">
+            <strong>SCAU</strong> 作业提交系统
+        </div>
+    </div>
+
+    <ul class="layui-nav layui-layout-left" lay-filter="layui-header-left" style="left: 305px;right: 0px">
+        <li class="layui-nav-item ">
+            <a href="/front/index">主页</a>
+        </li>
+        <li class="layui-nav-item layui-this">
+            <a href="/front/homework/list?userId=${session.currentUser.id}">课程作业</a>
+        </li>
+        <li class="layui-nav-item ">
+            <a href="/front/course/resourse?userId=${session.currentUser.id}" >课程资源</a>
+        </li>
+        <li class="layui-nav-item ">
+            <a href="/front/system/about" >关于</a>
+        </li>
+    </ul>
+    <ul class="layui-nav layui-layout-right" layui-filter="layui-header-right" style="padding-right: 50px;">
+        <li class="layui-nav-item">
+            <a href="/front/person_info?userId=${session.currentUser.id}" >
+                <img src="/image/touxiang.png" class="layui-nav-img">
+                ${session.currentUser.userName}
+            </a>
+            <dl class="layui-nav-child" style="text-align: center">
+                <dd><a href="/front/person_info?userId=${session.currentUser.id}" id="nav_child_center">个人中心</a></dd>
+                <dd><a href="/front/update_password" id="nav_child_pass">修改密码</a></dd>
+                <dd><a href="/front/history_record" id="nav_child_history">历史记录</a></dd>
+                <hr>
+                <dd><a href="/logout.html">退出</a></dd>
+            </dl>
+        </li>
+    </ul>
+    <!--</div>-->
+</div>
+<!--------------------------------------导航栏结束------------------------------------------->
+
+<div style="position: relative;top:80px;margin-left: 100px;margin-right: 100px">
+<!--------------------------------------主体开始------------------------------------------->
+    <div style="margin:0 50px 0 50px;padding:10px 20px 10px 20px;background-color: white;">
+        <a href="javascript:history.back(-1)" onclick="javascript:location.replace(this.href);event.returnValue=false; " ><i
+                class="iconfont layui-extend-fanhui"></i>返回</a>
+        <hr class="layui-bg-gray">
+        <div class="layui-form">
+            <div class="layui-form-item ">
+                <label class="layui-form-label"><strong>题目名称</strong></label>
+                <div class="layui-input-inline">
+                    <input type="text" name="title" id="title" class="layui-input" disabled value="${homework.subject}"
+                           style="border: white;width:500px;">
+                </div>
+            </div>
+            <hr class="layui-bg-gray">
+            <div class="layui-form-item">
+                <label class="layui-form-label"><strong>截止时间</strong></label>
+                <div class="layui-input-inline">
+                    <input type="text" name="deadline" id="deadline" class="layui-input" disabled
+                           value="${homework.deadline}" style="border: white;width:500px;">
+                </div>
+            </div>
+            <hr class="layui-bg-gray">
+            <div class="layui-form-item">
+                <label class="layui-form-label"><strong>提交备注</strong></label>
+                <div class="layui-input-inline">
+                    <textarea name="remark" id="remark" class="layui-textarea"
+                              style="width: 500px;height: 200px"></textarea>
+                </div>
+            </div>
+            @if(isNotEmpty(homework.fileType)){
+            <hr class="layui-bg-gray">
+            <div class="layui-form-item">
+                <label class="layui-form-label"><strong>作业附件</strong></label>
+                <div class="layui-input-inline">
+                    <button type="button" name="upload" id="upload" class="layui-btn" style="width: 190px">
+                        <i class="layui-icon">&#xe67c;</i>上传附件
+                    </button>
+                    <input class="layui-hide" id="srcPath" name="srcPath">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    文件不得超过${homework.fileSize}M,文件格式:${homework.fileType}
+                </div>
+            </div>
+            @}
+            <hr class="layui-bg-gray">
+            <div class="layui-form-item">
+                <label class="layui-form-label"><strong>作业状态</strong></label>
+                <div class="layui-input-inline">
+                    @if(isNotEmpty(homework.submitTime)){
+                    <input type="text" name="state" class="layui-input" disabled value="已提交"
+                           style="border: white;">
+                    @}else{
+                    <input type="text" name="state"  class="layui-input" disabled value="未提交"
+                           style="border: white;">
+                    @}
+                </div>
+            </div>
+            <!--<hr class="layui-bg-gray">-->
+            <!--<div class="layui-form-item">-->
+            <!--<label class="layui-form-label"><strong>教师评分</strong></label>-->
+            <!--<div class="layui-input-inline">-->
+            <!--<input type="text" name="score" id="score" class="layui-input" disabled value="A+" style="border: white;">-->
+            <!--</div>-->
+            <!--</div>-->
+            <!--<hr class="layui-bg-gray">-->
+            <!--<div class="layui-form-item">-->
+            <!--<label class="layui-form-label"><strong>教师评语</strong></label>-->
+            <!--<div class="layui-input-inline">-->
+            <!--<input type="text" name="remark" id="remark" class="layui-input" disabled value="Good" style="border: white;width: 500px">-->
+            <!--</div>-->
+            <!--</div>-->
+            <hr class="layui-bg-gray">
+            <div class="layui-form-item" style="text-align: center">
+                <button class="layui-btn" lay-submit lay-filter="submit-homework">确认提交</button>
+            </div>
+        </div>
+
+    </div>
+<!--------------------------------------主体结束------------------------------------------->
+</div>
+<!----------------------------------页脚开始----------------------------------------->
+
+<!----------------------------------页脚结束----------------------------------------->
+
+<script src="../../../layui/layui.js"></script>
+<script>
+    //JavaScript代码区域
+    layui.use(["jquery", "form", "upload","layer"], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            upload = layui.upload,
+            layer=layui.layer;
+
+        //上传附件
+        upload.render({
+            elem: "#upload",
+            url: "/file/upload",
+            accept:"file",
+            exts:"${homework.fileType}",
+            data:{
+                typeName:"homework"
+            },
+            // acceptMime:"",
+            size:"${homework.fileSize*1024}",
+            done: function (res) {
+                layer.msg(res.msg);
+                $("#srcPath").attr("value",res.data.src);
+            }
+        });
+
+        //提交作业
+        form.on("submit(submit-homework)", function (data) {
+            $.ajax({
+                url: "/homework/student/submit",
+                data: {
+                    stuId:"${session.currentUser.id}",
+                    homeworkId:"${homework.id}",
+                    remark:$("#remark").val(),
+                    srcPath:$("#srcPath").val()
+                },
+                type: "post",
+                success: function (res) {
+                    layer.msg(res.msg);
+                }
+            })
+        })
+
+    });
+</script>
+</body>
+</html>

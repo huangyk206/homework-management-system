@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SCAU 作业管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+</head>
+<body>
+<div style="margin: 10px;">
+    <input class="layui-hide" id="homeworkId" value="${homeworkId!}">
+    <div class="layui-form">
+        @if(isEmpty(homeworkId)){
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">课程作业</label>
+                <div class="layui-input-inline" style="min-width: 240px">
+                    <select class="layui-select" name="course" id="course" lay-filter="course">
+                        <option value=""></option>
+                        <option value="1">C++</option>
+                        <option value="2">JAVA</option>
+                        <option value="3">计算机网络</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline" style="min-width: 240px">
+                    <select class="layui-select" name="homework" id="homework" lay-filter="homework">
+                        <option value=""></option>
+                        <option value="1">实验一</option>
+                        <option value="2">实验二</option>
+                        <option value="3">实验三</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        @}
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">是否提交</label>
+                <div class="layui-input-block" style="min-width: 240px">
+                    <select class="layui-select" name="isSubmit" id="isSubmit" lay-filter="isSubmit">
+                        <option value=""></option>
+                        <option value="1">是</option>
+                        <option value="0">否</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">是否批改</label>
+                <div class="layui-input-block" style="min-width: 240px">
+                    <select class="layui-select" name="isRevise" id="isRevise" lay-filter="isRevise">
+                        <option value=""></option>
+                        <option value="1">是</option>
+                        <option value="0">否</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">学号</label>
+                <div class="layui-input-block" style="min-width: 240px">
+                    <input type="text" class="layui-input" name="keyword" id="keyword">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <button class="layui-btn" lay-submit lay-filter="homework-search">
+                    <i class="layui-icon layui-icon-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    </div>
+    <hr>
+
+    <table class="layui-hide" id="submitList"
+           lay-filter="homework-submit-list">
+    </table>
+</div>
+
+<script type="text/html" id="toolBar">
+        <div class="layui-btn-group">
+            <button class="layui-btn layui-btn-sm" data-type="download"><i class="layui-icon">&#xe601;</i> 下载附件</button>
+        </div>
+</script>
+
+<script src="/layui/layui.js"></script>
+<script src="/js/common.js"></script>
+<script>
+    //JavaScript代码区域
+    layui.use(["jquery", "element", "form", "table"], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table;
+        table.render({
+            elem:"#submitList",
+            url:"/homework/student/submit/list?teacherId=${session.currentUser.id}&homeworkId="+$("#homeworkId").val(),
+            height:"full-150",
+            // limits : [10,15,20,25],
+            toolbar:"#toolBar",
+            cols:[[
+                {type:"checkbox",fixed:"left"},
+                {title:"题目",field:"subject",align:"center"},
+                {title:"所属课程",field:"courseName",align:"center"},
+                {title:"班级",field:"clazz",align:"center"},
+                {title:"学号",field:"stuNum",align:"center"},
+                {title:"姓名",field:"stuName",align:"center"},
+                {title:"是否上交",field:"isSubmit",align:"center",templet:function (data) {
+                        if (data.submitTime!=null){
+                            return "<span style='color:blue'>是</span>";
+                        }else{
+                            return "<span style='color:red'>否</span>";
+                        } 
+                        
+                    }},
+                {title:"上交时间",field:"submitTime",align:"center",templet:function (data) {
+                        if(data.submitTime!=null){
+                            return timestampToTime(data.submitTime);
+                        }
+                        return "";
+                    }},
+                {title:"是否批改",field:"isRevise",align:"center",templet:function (data) {
+                        if (data.isRevise!=null&&data.isRevise==1){
+                            return "<span style='color:blue'>是</span>";
+                        }else if((data.isRevise!=null&&data.isRevise==0)){
+                            return "<span style='color:red'>否</span>";
+                        }
+                        return "";
+
+                    }},
+                {title:"分数",field:"score",align:"center"},
+                {title:"操作",align:"center",fixed:"right",templet:function (data) {
+                      if(data.submitTime==null){
+                          return ' <button class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail" disabled title="未提交，无法查看">查看</button>\n' +
+                              '   <button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="revise" disabled title="未提交，无法查看">评分</button>'
+                      }else{
+                          return ' <button class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</button>\n' +
+                              '   <button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="revise">评分</button>'
+                      }
+                    }},
+            ]],
+            page:true,
+
+        });
+
+        form.on("select(course)", function (data) {
+            reload();
+        });
+
+        form.on("select(homework)", function (data) {
+            reload();
+        });
+
+        form.on("select(isRevise)", function (data) {
+            reload();
+        });
+
+        form.on("select(isSubmit)", function (data) {
+            reload();
+        });
+
+        form.on("submit(homework-search)", function (data) {
+            reload();
+        });
+
+
+        table.on("tool(homework-submit-list)", function (obj) {
+            var data=obj.data;
+            var event=obj.event;
+            if(event=="detail"){
+                var title="作业详情";
+                var content="/homework/submit/detail.html?homeworkId="+data.homeworkId+"&stuId="+data.stuId;
+                open(title,content);
+            }else if(event=="revise"){
+                var title="作业评分";
+                var content="/homework/submit/revise.html?homeworkId="+data.homeworkId+"&stuId="+data.stuId;
+                open(title,content);
+            }
+
+        });
+
+        function open(title,content) {
+            var index = layer.open({
+                title : title,
+                type : 2,
+                content : content,
+                success : function(layero, index){
+                    layer.getChildFrame('body', index);
+                },
+                cancel:function () {
+                    reload();
+                }
+            })
+            layer.full(index);
+            //改变窗口大小时，重置弹窗的宽高，防止超出可视区域（如F12调出debug的操作）
+            $(window).on("resize",function(){
+                layer.full(index);
+            })
+        };
+
+        table.on('toolbar(homework-list)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            var event=obj.event;
+
+
+        });
+
+        function reload(){
+            table.reload("submitList", {
+                url: "/homework/student/submit/list",
+                where: {
+                    teacherId: "${session.currentUser.id}",
+                    isRevise:$("#isRevise").val(),
+                    isSubmit:$("#isSubmit").val(),
+                    courseId: $("#course").val(),
+                    homeworkId:$("#homeworkId").val()!=null?$("#homeworkId").val():$("#homework").val(),
+                    keyword: $("#keyword").val(),
+                },
+                height:"full-150",
+            });
+        }
+
+
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+server:
+  port: 8088
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/scau_homework_0313?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+    username: root
+    password: huangyk
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: scau.huangyk.homeworkmanagementsystem.entity
+  global-config:
+    id-type: 2
+    field-strategy: 2
+#    db-column-underline: true
+    refresh-mapper: true
+    meta-object-handler: scau.huangyk.homeworkmanagementsystem.component.MyMetaObjectHandler
+
+    #逻辑删除配置
+    sql-injector: com.baomidou.mybatisplus.mapper.LogicSqlInjector
+    #配置逻辑删除字段为0是删除
+    logic-delete-value: 0
+    #配置逻辑删除字段为1是未删除
+    logic-not-delete-value: 1
+
+beetlsql:
+  enabled: false

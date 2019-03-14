@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SCAU 作业管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+</head>
+<body>
+<div style="margin: 10px;">
+    <div style="margin:0 50px 0 50px;padding:10px 20px 10px 20px;background-color: white;">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>题目名称</strong></div>
+            <div class="layui-col-md11" id="subject"><a href="javascript:;" style="text-decoration: underline" data-url="" >${homework.subject}</a> </div>
+        </div>
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>提交时间</strong></div>
+            <div class="layui-col-md11" id="submitTime">
+                ${homework.submitTime,dateFormat="yyyy-MM-dd hh:mm:ss"}
+            </div>
+        </div>
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>班级</strong></div>
+            <div class="layui-col-md11" id="clazz">${homework.clazz}</div>
+        </div>
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>学号</strong></div>
+            <div class="layui-col-md11" id="stuNum">${homework.stuNum}</div>
+        </div>
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>姓名</strong></div>
+            <div class="layui-col-md11" id="stuName">${homework.stuName}</div>
+        </div>
+        <!--<hr class="layui-bg-gray">-->
+        <!--<div class="layui-row" style="margin:20px 0 20px 0">-->
+            <!--<div class="layui-col-md1"><strong>作业状态</strong></div>-->
+            <!--<div class="layui-col-md11" id="status">未提交</div>-->
+        <!--</div>-->
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>提交备注</strong></div>
+            <div class="layui-col-md11" id="submitRemark">
+               ${homework.submitRemark}
+            </div>
+        </div>
+        @if(homework.srcPath!=null&&isNotEmpty(homework.srcPath)){
+            <hr class="layui-bg-gray">
+            <div class="layui-row" style="margin:20px 0 20px 0">
+                <div class="layui-col-md1"><strong>附件</strong></div>
+                <div class="layui-col-md11" >
+                    <input class="layui-hide" id="srcPath" name="srcPath" value="${homework.srcPath!}">
+                    <a class="layui-btn layui-btn-sm" href="${homework.srcPath!}"><i class="layui-icon">&#xe601;</i>下载附件</a>
+                </div>
+            </div>
+        @}
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>教师评分</strong></div>
+            <div class="layui-col-md11" id="score">${homework.score}</div>
+        </div>
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div class="layui-col-md1"><strong>教师反馈</strong></div>
+            <div class="layui-col-md11" id="feedback">
+               ${homework.feedback}
+            </div>
+        </div>
+        <hr class="layui-bg-gray">
+        <div class="layui-row" style="margin:20px 0 20px 0">
+            <div style="text-align: center">
+                <!--<a class="layui-btn" href="javascript:history.back(-1)">返回</a>-->
+                <a class="layui-btn" href="/homework/submit/revise.html?homeworkId=${homework.homeworkId}&stuId=${homework.stuId}">评分</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/layui/layui.js"></script>
+<script>
+    //JavaScript代码区域
+    layui.use(["jquery", "layer"], function () {
+        var $ = layui.jquery,
+            layer=layui.layer;
+
+        $(document).on('click','#download',function(){
+            $.ajax({
+                url:"",
+                data:"",
+                success:function (res) {
+                    layer.msg(res.msg);
+                }
+            })
+        });
+
+    });
+
+</script>
+</body>
+</html>
